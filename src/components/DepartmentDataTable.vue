@@ -165,7 +165,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, h } from "vue";
 import axios from "axios";
-import Button from "./ui/button/Button.vue";
+import Button from "@/components/ui/button/Button.vue";
 import { Trash } from "lucide-vue-next";
 import { Edit } from "lucide-vue-next";
 import { Search } from "lucide-vue-next";
@@ -215,6 +215,8 @@ import { useToast } from "@/components/ui/toast/use-toast";
 import Toaster from "@/components/ui/toast/Toaster.vue";
 const { toast } = useToast();
 
+axios.defaults.baseURL = import.meta.env.VITE_API_HOST;
+
 const props = defineProps({
   apiData: Array,
   page: Number, // Add this line
@@ -242,19 +244,7 @@ const filteredEmployees = computed(() => {
     employee.name.toLowerCase().includes(searchTerm.value.toLowerCase())
   );
 });
-// watch(filteredEmployees, (newPage, oldPage) => {
-//   console.log(newPage, oldPage);
-// });
-function addedEmployee(values: any) {
-  toast({
-    title: "You updated the following values:",
-    description: h(
-      "pre",
-      { class: "mt-2 w-[340px] rounded-md bg-gray-950 p-4" },
-      h("code", { class: "text-white" }, JSON.stringify(values, null, 2))
-    ),
-  });
-}
+
 function updetedEmplyee() {
   toast({
     title: "Edited!",
@@ -265,9 +255,7 @@ watch(currentPage, (newPage, oldPage) => {
 });
 onMounted(async () => {
   try {
-    const response = await axios.get(
-      "https://interview.frontend.equinesolutions.co/api/Departments/"
-    );
+    const response = await axios.get("/api/Departments/");
     apiData.value = response.data;
     console.log(apiData.value);
   } catch (error) {
@@ -302,10 +290,7 @@ const addDep = async () => {
     return;
   }
   try {
-    const response = await axios.post(
-      `https://interview.frontend.equinesolutions.co/api/Departments/`,
-      newDep
-    );
+    const response = await axios.post(`/api/Departments/`, newDep);
     apiData.value.push(response.data);
   } catch (error) {
     console.error("Error:", error);
@@ -323,7 +308,7 @@ function editItem(item) {
 async function updateItem() {
   try {
     const response = await axios.patch(
-      `https://interview.frontend.equinesolutions.co/api/Departments/${editingItem.value.id}`,
+      `/api/Departments/${editingItem.value.id}`,
       editingItem.value
     );
     if (response.status === 200) {
@@ -353,7 +338,7 @@ let employeeDepartments = ref([]);
 async function fetchEmployeeDepartments(departmentId) {
   try {
     const response = await axios.get(
-      `https://interview.frontend.equinesolutions.co/api/Departments/${departmentId}/employees`
+      `/api/Departments/${departmentId}/employees`
     );
     employeeDepartments.value = response.data;
     return response.data.map((e) => `id: ${e.id}, name: ${e.name}`);
@@ -368,9 +353,7 @@ const deleteDep = async (depDelete) => {
       error422(employees);
     } else {
       try {
-        await axios.delete(
-          `https://interview.frontend.equinesolutions.co/api/Departments/${depDelete.id}`
-        );
+        await axios.delete(`/api/Departments/${depDelete.id}`);
       } catch (error) {
         console.error("Error", error.message);
       }

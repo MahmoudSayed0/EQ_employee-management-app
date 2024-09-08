@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-screen px-5">
+  <div class="flex flex-col min-h-screen px-10 pt-5">
     <header class="text-white py-4">
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
@@ -20,12 +20,29 @@
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
+    <div class="flex flex-col items-center justify-center">
+      <img src="../assets/logo.png" alt="" width="100" />
+      <div class="flex flex-col justify-center content-center items-center">
+        <h1 class="text-xl mt-5 text-center">
+          Vue Frontend Developer Interview Assignment for Vue Frontend Developer
+          position at Equine Solutions
+        </h1>
+        <p class="text-sm mt-5 w-1/2 text-center">
+          Build a Vue 3 application that interacts with an API to manage
+          employees and departments. The goal is to demonstrate your ability to
+          work with RESTful APIs, handle CRUD operations, manage relationships
+          between data entities, and handle errors and exceptions gracefully.
+        </p>
+      </div>
+    </div>
 
     <main class="">
       <slot></slot>
     </main>
 
-    <!-- <footer class="bg-gray-800 text-white py-4"></footer> -->
+    <footer class="flex items-center justify-center text-white py-4">
+      thank you for your patience❤️
+    </footer>
   </div>
 </template>
 

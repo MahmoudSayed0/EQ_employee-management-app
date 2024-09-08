@@ -115,11 +115,10 @@
                         :disabled="!editingItem.departmentId"
                         @click="
                           editingItem.departmentId
-                            ? (assignEmployeeToDepartment(
+                            ? assignEmployeeToDepartment(
                                 editingItem.id,
                                 editingItem.departmentId
-                              ),
-                              updatedToast())
+                              )
                             : updatedToast()
                         "
                         >Assign to dep</Button
@@ -293,13 +292,13 @@ import {
 import { useToast } from "@/components/ui/toast/use-toast";
 import { toast } from "vue-sonner";
 
-const { toast } = useToast();
+axios.defaults.baseURL = import.meta.env.VITE_API_HOST;
 
-// const { toast } = useToast();
+const { toast } = useToast();
 
 const props = defineProps({
   apiData: Array,
-  page: Number, // Add this line
+  page: Number,
 });
 
 const apiData = ref([]);
@@ -349,17 +348,21 @@ function depNotExist(val) {
     ),
   });
 }
-function noNameError() {
-  toast({
-    title: "name required",
-  });
-}
-function addedDep() {
-  toast({
-    title: "Added Success",
-  });
-}
 
+function removeDepError(val) {
+  toast({
+    title: "Removed",
+    description: h(
+      "div",
+      { class: "mt-2 w-[340px] rounded-md  p-4" },
+      h(
+        "div",
+        { class: "text-red-500 font-bold" },
+        `Department ID: ${JSON.stringify(val, null, 2)}`
+      )
+    ),
+  });
+}
 function removeEmployee(val) {
   toast({
     title: "Removed",
@@ -379,9 +382,7 @@ watch(currentPage, (newPage, oldPage) => {
 });
 onMounted(async () => {
   try {
-    const response = await axios.get(
-      "https://interview.frontend.equinesolutions.co/api/Employees/"
-    );
+    const response = await axios.get("/api/Employees/");
     apiData.value = response.data;
     // console.log(apiData.value);
   } catch (error) {
@@ -397,7 +398,7 @@ const state = reactive({
 const fetchEmployeeDepartments = async (employeeId: number) => {
   try {
     const response = await axios.get(
-      `https://interview.frontend.equinesolutions.co/api/Employees/${employeeId}/departments?page=1&paginate=10`
+      `/api/Employees/${employeeId}/departments?page=1&paginate=10`
     );
     state.employeeDepartments[employeeId] = response.data
       .map((e: any) => e.name)
@@ -409,9 +410,7 @@ const fetchEmployeeDepartments = async (employeeId: number) => {
 
 const fetchEmployees = async () => {
   try {
-    const response = await axios.get(
-      "https://interview.frontend.equinesolutions.co/api/Employees/"
-    );
+    const response = await axios.get("/api/Employees/");
     state.employees = response.data;
     for (const employee of state.employees) {
       fetchEmployeeDepartments(employee.id);
@@ -433,20 +432,9 @@ const filteredEmployees = computed(() => {
 const employeeDepartments = computed(() => state.employeeDepartments);
 const departments = ref([]);
 
-function startEditing(item) {
-  originalName.value = item.name;
-  editingItem = { ...item };
-}
-
-function saveChanges() {
-  // Save the changes...
-  originalName.value = editingItem.name; // Update the original name
-}
 onMounted(async () => {
   try {
-    const response = await axios.get(
-      "https://interview.frontend.equinesolutions.co/api/Departments"
-    );
+    const response = await axios.get("/api/Departments");
     departments.value = response.data.map((department) => department.id);
   } catch (error) {
     console.error("Error fetching departments:", error);
@@ -460,10 +448,12 @@ const assignEmployeeToDepartment = async (
   if (!departments.value.includes(departmentId)) {
     depNotExist(departmentId);
     return;
+  } else {
+    updatedToast();
   }
   try {
     const response = await axios.post(
-      `https://interview.frontend.equinesolutions.co/api/Departments/${departmentId}/employees`,
+      `/api/Departments/${departmentId}/employees`,
       { employeeId: employeeId }
     );
     return response.data;
@@ -478,7 +468,7 @@ const removeEmployeeFromDepartment = async (
 ) => {
   try {
     const response = await axios.delete(
-      `https://interview.frontend.equinesolutions.co/api/Departments/${departmentId}/employees/${employeeId}`
+      `/api/Departments/${departmentId}/employees/${employeeId}`
     );
     return response.data;
   } catch (error) {
@@ -502,10 +492,7 @@ const addEmployee = async () => {
     return;
   }
   try {
-    const response = await axios.post(
-      `https://interview.frontend.equinesolutions.co/api/Employees/`,
-      newEmployee
-    );
+    const response = await axios.post(`/api/Employees/`, newEmployee);
     apiData.value.unshift(response.data);
   } catch (error) {
     console.error("Error:", error);
@@ -519,17 +506,6 @@ const isNameChanged = computed(() => {
   return name.value !== originalName.value;
 });
 
-watch(
-  () => editingItem.value.name,
-  (newName, oldName) => {
-    console.log(
-      `Name changed from ${oldName} to ${newName}`,
-      editingItem.value.name
-    );
-    // Handle the name change...
-  }
-);
-
 function editItem(item) {
   originalName.value = item.name;
   editingItem.value = { ...item };
@@ -538,7 +514,7 @@ function editItem(item) {
 async function updateItem() {
   try {
     const response = await axios.patch(
-      `https://interview.frontend.equinesolutions.co/api/Employees/${editingItem.value.id}`,
+      `/api/Employees/${editingItem.value.id}`,
       editingItem.value
     );
     if (response.status === 200) {
@@ -554,9 +530,7 @@ async function updateItem() {
 
 const deleteEmployee = async (employeeToDelete) => {
   try {
-    await axios.delete(
-      `https://interview.frontend.equinesolutions.co/api/Employees/${employeeToDelete.id}`
-    );
+    await axios.delete(`/api/Employees/${employeeToDelete.id}`);
     const index = apiData.value.findIndex(
       (employee) => employee.id === employeeToDelete.id
     );
